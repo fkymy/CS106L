@@ -20,27 +20,12 @@ int main(int argc, char *argv[])
 }
 
 int stringToInteger(const string& str) {
-	// No error checking
 	istringstream iss(str);
-	cout << "Before read: ";
-	printStateBits(iss);
-	cout << iss.str() << endl;
 
-	int value;
-	iss >> value;
-	if (iss.fail()) throw domain_error("stringToInteger error");
-	// if (!iss >> ch)) { // report error }
+	int value; char remain;
+	if (!(iss >> value) || iss >> remain) // iss.fail() or !iss.fail
+		throw domain_error("stringToInteger Error");
 
-	char remain;
-	iss >> remain;
-	if (!iss.fail()) throw domain_error("stringToInteger error");
-
-	// if (iss.fail() || !iss.eof())
-	// 	throw domain_error("stringToInteger Error");
-
-	cout << "After read: ";
-	printStateBits(iss);
-	cout << iss.str() << endl;
 	return value;
 }
 
