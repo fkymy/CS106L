@@ -39,21 +39,25 @@ int main() {
 	printVec(vec);
 
 	cout << "Finding element..." << endl;
-	auto it = std::find(vec.begin(), vec.end(), elemToFind);
+	vector<int>::iterator it = std::find(vec.begin(), vec.end(), elemToFind);
 	if (it == vec.end())
-		cout << "Not found";
+		cout << "Not found" << endl;
 	else
-		cout << "Found element " << elemToFind;
-	cout << endl;
+		cout << "Found element " << elemToFind << endl;
 
 	set<int> mySet{1, 3, 57, 137};
 
 	set<int>::iterator iter = mySet.lower_bound(2);
 	set<int>::iterator end = mySet.upper_bound(57);
 
-	for (; iter != end; ++iter) {
+	while(iter != end) {
 		cout << *iter << endl;
+		++iter;
 	}
+
+	// for (; iter != end; ++iter) {
+	// 	cout << *iter << endl;
+	// }
 
 	return 0;
 }
