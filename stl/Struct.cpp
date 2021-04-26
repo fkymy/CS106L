@@ -22,7 +22,7 @@ struct Course {
 
 int main() {
 	vector<int> vec {3, 1, 4, 1, 5, 9};
-	Course now {"CS106L", {15, 30}, {16, 30}, {"Wang", "Zeng"}};
+	struct Course now {"CS106L", {15, 30}, {16, 30}, {"Wang", "Zeng"}};
 
 	vector<int> vec1{3}; // vector = {3}
 	vector<int> vec2(3); // vector = {0, 0, 0}
