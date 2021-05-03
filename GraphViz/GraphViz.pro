@@ -1,4 +1,4 @@
-QT += widgets
+QT += core gui widgets multimedia network
 
 # Make sure we do not accidentally #include files placed in 'res'
 CONFIG += no_include_pwd
@@ -16,6 +16,12 @@ QMAKE_CXXFLAGS += -std=c++11 \
     -Wreturn-type \
     -Werror=return-type \
     -Wunreachable-code \
+
+# Configure flags for the C++ compiler
+# (In general, many warnings/errors are enabled to tighten compile-time checking.
+# A few overly pedantic/confusing errors are turned off to avoid confusion.)
+
+CONFIG          +=  sdk_no_version_check   # removes spurious warnings on Mac OS X
 
 # Copies the given files to the destination directory
 # The rest of this file defines how to copy the resources folder
@@ -50,7 +56,6 @@ copyResources.input = $$files($$PWD/res/*)
 OTHER_FILES = $$files(res/*)
 QMAKE_EXTRA_TARGETS += copyResources
 POST_TARGETDEPS += copyResources
-
 macx {
     cache()
     QMAKE_MAC_SDK = macosx
