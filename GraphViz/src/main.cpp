@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <ctime>
 #include "SimpleGraph.h"
 
 using std::cout;	using std::endl;
@@ -11,18 +12,22 @@ using std::cin;     using std::string;
 using std::ifstream; using std::cerr;
 
 void Welcome();
-void parseGraph(SimpleGraph &graph, string filename);
+void parse(SimpleGraph &graph, string filename);
+void iterativelyDraw(SimpleGraph &graph, double numSeconds);
+void computeForce(SimpleGraph &graph);
+
 string fileToString(ifstream &file);
 template <typename T>
 void printVector(const std::vector<T> &v);
 
 const double kPi = 3.14159265358979323;
-const int numSeconds = 5;
+const double numSeconds = 15;
+const double kRepel = 0.001;
 
 int main() {
     SimpleGraph graph;
 
-    parseGraph(graph, "5grid");
+    parse(graph, "5grid");
 
     if (graph.nodes.size() == 0) {
         cout << "Failed to parse graph from file..." << endl;
@@ -30,7 +35,8 @@ int main() {
     }
 
     InitGraphVisualizer(graph);
-    DrawGraph(graph);
+    iterativelyDraw(graph, numSeconds);
+
     return 0;
 }
 
@@ -41,7 +47,7 @@ void Welcome() {
     cout << endl;
 }
 
-void parseGraph(SimpleGraph &graph, string filename) {
+void parse(SimpleGraph &graph, string filename) {
     ifstream file;
 
     file.open(filename.c_str());
@@ -69,6 +75,47 @@ void parseGraph(SimpleGraph &graph, string filename) {
         edge.start = start;
         edge.end = end;
         graph.edges.push_back(edge);
+    }
+}
+
+void iterativelyDraw(SimpleGraph &graph, double numSeconds) {
+    time_t startTime;
+    double elapsedTime;
+
+    startTime = time(NULL);
+    elapsedTime = difftime(time(NULL), startTime);
+    while (elapsedTime < numSeconds) {
+        // do complex operation
+        computeForce(graph);
+        DrawGraph(graph);
+        elapsedTime = difftime(time(NULL), startTime);
+    }
+}
+
+void computeForce(SimpleGraph &graph) {
+    for (size_t i = 0; i < graph.nodes.size() - 1; ++i) {
+        for (size_t j = i + 1; j < graph.nodes.size(); ++j) {
+            double xDiff = graph.nodes[j].x - graph.nodes[i].x;
+            double yDiff = graph.nodes[j].y - graph.nodes[i].y;
+            double fRepel = kRepel / sqrt(xDiff * xDiff + yDiff * yDiff);
+            double theta = atan2(yDiff, xDiff);
+            graph.nodes[i].x -= fRepel * cos(theta);
+            graph.nodes[i].y -= fRepel * sin(theta);
+            graph.nodes[j].x += fRepel * cos(theta);
+            graph.nodes[j].y += fRepel * sin(theta);
+        }
+    }
+    for (size_t i = 0; i < graph.edges.size(); ++i) {
+        Node start = graph.nodes[graph.edges[i].start];
+        Node end = graph.nodes[graph.edges[i].end];
+        double xDiff = end.x - start.x;
+        double yDiff = end.y - start.y;
+        double fAttract = kRepel * (xDiff * xDiff + yDiff * yDiff);
+        double theta = atan2(yDiff, xDiff);
+        start.x += fAttract * cos(theta);
+        start.y += fAttract * sin(theta);
+        end.x -= fAttract * cos(theta);
+        end.x -= fAttract * sin(theta);
     }
 }
 
