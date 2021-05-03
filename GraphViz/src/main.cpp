@@ -28,7 +28,7 @@ int main() {
     }
 
     InitGraphVisualizer(graph);
-
+    DrawGraph(graph);
     return 0;
 }
 
