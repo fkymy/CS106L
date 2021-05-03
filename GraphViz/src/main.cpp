@@ -3,11 +3,12 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <cmath>
 #include "SimpleGraph.h"
 
 using std::cout;	using std::endl;
 using std::cin;     using std::string;
-using std::ifstream;
+using std::ifstream; using std::cerr;
 
 void Welcome();
 void parseGraph(SimpleGraph &graph, string filename);
@@ -15,6 +16,7 @@ string fileToString(ifstream &file);
 template <typename T>
 void printVector(const std::vector<T> &v);
 
+const double kPi = 3.14159265358979323;
 const int numSeconds = 5;
 
 int main() {
@@ -32,8 +34,6 @@ int main() {
     return 0;
 }
 
-/* Prints a message to the console welcoming the user and
- * describing the program. */
 void Welcome() {
     cout << "Welcome to CS106L GraphViz!" << endl;
     cout << "This program uses a force-directed graph layout algorithm" << endl;
@@ -46,29 +46,25 @@ void parseGraph(SimpleGraph &graph, string filename) {
 
     file.open(filename.c_str());
     if (!file.is_open()) {
-        cout << "Cannot file the file..." << endl;
-        return;
+        cerr << "Cannot file the file..." << endl;
+        return ;
     }
 
-    // Read disk file to string
-    string fileContent;
-    fileContent = fileToString(file);
-
-    // cout << "fileContent: " << fileContent << endl;
-    // Get Number of nodes and edges
-    std::istringstream converter(fileContent);
-
     size_t numNodes;
-    converter >> numNodes;
+    file >> numNodes;
     for (size_t i = 0; i < numNodes; ++i) {
         Node node;
-        node.x = (double)i;
-        node.y = (double)i;
+        // Evenly space out on unit circle
+        node.x = cos((2 * kPi * (i + 1)) / numNodes);
+        node.y = sin((2 * kPi * (i + 1)) / numNodes);
         graph.nodes.push_back(node);
     }
 
-    size_t start, end;
-    while (converter >> start >> end) {
+    while (true) {
+        size_t start, end;
+        file >> start >> end;
+        if (file.fail()) break;
+
         Edge edge;
         edge.start = start;
         edge.end = end;
@@ -108,8 +104,9 @@ void printVector(const std::vector<T> &v) {
         cout << v[v.size() - 1];
     }
     cout << "}" << endl;
-
 }
+
+
 
 int getSeconds() {
     cout << "Enter seconds: ";
