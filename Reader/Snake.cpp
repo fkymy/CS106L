@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <ctime>
+#include <cstdlib>
 
 using namespace std;
 
@@ -70,17 +72,137 @@ void LoadWorld(gameT& game, ifstream& input) {
 			game.snake.push_back(MakePoint(row, col));
 		}
 	}
+	for (int row = 0; row < game.numRows; ++row)
+		cout << game.world[row] << endl;
 	game.numEaten = 0;
 }
 
 void InitializeGame(gameT& game) {
+	srand(static_cast<unsigned int>(time(NULL)));
+
 	ifstream input;
 	OpenUserFile(input);
 	LoadWorld(game, input);
 }
 
+const double kWaitTime = 0.1;
+
+void Pause() {
+	clock_t startTIme = clock();
+	while (static_cast<double>(clock() - startTIme) / CLOCKS_PER_SEC < kWaitTime)
+		;
+}
+
+const string kClearCommand = "clear";
+
+void PrintWorld(gameT& game) {
+	system(kClearCommand.c_str());
+	for (int row = 0; row < game.numRows; ++row)
+		cout << game.world[row] << endl;
+	cout << "Food eaten: " << game.numEaten << endl;
+}
+
+void DisplayResult(gameT& game) {
+	PrintWorld(game);
+	if (game.numEaten == kMaxFood) {
+		cout << "The snake ate enough food and wins!" << endl;
+	} else {
+		cout << "Oh no! The snake crashed!" << endl;
+	}
+}
+
+pointT GetNextPosition(gameT& game, int dx, int dy) {
+	pointT result = game.snake.front();
+
+	result.row += dy;
+	result.col += dx;
+	return result;
+}
+
+bool InWorld(pointT& pt, gameT& game) {
+	return pt.col >= 0 && pt.row >= 0 &&
+		pt.col < game.numCols && pt.row < game.numRows;
+}
+
+bool Crashed(pointT headPos, gameT& game) {
+	return !InWorld(headPos, game) ||
+		game.world[headPos.row][headPos.col] == kSnakeTile ||
+		game.world[headPos.row][headPos.col] == kWallTile;
+}
+
+bool RandomChance(double probability) {
+	return (rand() / (RAND_MAX + 1.0)) < probability;
+}
+
+const double kTurnRate = 0.2;
+void PerformAI(gameT& game) {
+	pointT nextHead = GetNextPosition(game, game.dx, game.dy);
+
+	if (Crashed(nextHead, game) || RandomChance(kTurnRate)) {
+		int leftDx = -game.dy;
+		int leftDy = game.dx;
+		int rightDx = game.dy;
+		int rightDy = -game.dx;
+
+		bool canLeft = !Crashed(GetNextPosition(game, leftDx, leftDy), game);
+		bool canRight = !Crashed(GetNextPosition(game, rightDx, rightDy), game);
+
+		bool willTurnLeft = false;
+		if (!canLeft && !canRight)
+			return;
+		else if (canLeft && !canRight)
+			willTurnLeft = true;
+		else if (!canLeft && canRight)
+			willTurnLeft = false;
+		else
+			willTurnLeft = RandomChance(0.5);
+
+		game.dx = willTurnLeft ? leftDx : rightDx;
+		game.dy = willTurnLeft ? leftDy : rightDy;
+	}
+}
+
+void PlaceFood(gameT& game) {
+	while (true) {
+		int row = rand() % game.numRows;
+		int col = rand() % game.numCols;
+
+		if (game.world[row][col] == kEmptyTile) {
+			game.world[row][col] = kFoodTile;
+			return;
+		}
+	}
+}
+
+bool MoveSnake(gameT& game) {
+	pointT nextHead = GetNextPosition(game, game.dx, game.dy);
+	if (Crashed(nextHead, game))
+		return false;
+	bool isFood = (game.world[nextHead.row][nextHead.col] == kFoodTile);
+
+	game.world[nextHead.row][nextHead.col] = kSnakeTile;
+	game.snake.push_front(nextHead);
+
+	if (!isFood) {
+		game.world[game.snake.back().row][game.snake.back().col] = kEmptyTile;
+		game.snake.pop_back();
+	} else {
+		++game.numEaten;
+		PlaceFood(game);
+	}
+	return true;
+}
+
 void RunSimulation(gameT& game) {
-	
+	while (game.numEaten < kMaxFood) {
+		PrintWorld(game);
+		PerformAI(game);
+
+		if (!MoveSnake(game))
+			break;
+		Pause();
+	}
+	DisplayResult(game);
 }
 
 int main() {
