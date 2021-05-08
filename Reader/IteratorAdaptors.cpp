@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include <set>
 using namespace std;
@@ -49,4 +51,9 @@ int main() {
               inserter(result, result.begin()));
 
     return 0;
+}
+
+string ConvertToLowerCase(string text) {
+    transform(text.begin(), text.end(), text.begin(), ::tolower);
+    return text;
 }
