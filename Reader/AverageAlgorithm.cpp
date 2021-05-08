@@ -9,10 +9,8 @@ int main() {
     ifstream input("data.txt");
     multiset<int> values;
 
-    int currValue;
-    while (input >> currValue) {
-        values.insert(currValue);
-    }
+    copy(istream_iterator<int>(input), istream_iterator<int>(),
+         inserter(values, values.begin()));
 
     cout << "Average is: " << accumulate(values.begin(), values.end(), 0.0) / values.size() << endl;
 
