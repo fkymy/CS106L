@@ -15,7 +15,29 @@ using std::string;          using std::unordered_set;
 unordered_set<string> findWikiLinks(const string& page_html) {
     // TODO: delete this return statement and implement the
     //       function!
-    return {"hello", "World"};
+    unordered_set<string> links;
+
+    string wikiPath = "<a href=\"/wiki/";
+
+    string::const_iterator curr = page_html.begin();
+    string::const_iterator end = page_html.end();
+
+    while (curr != end) {
+        // find occurance of wikiPath in the range [start, end)
+        string::const_iterator found = std::search(curr, end, wikiPath.begin(), wikiPath.end());
+        if (found == end) break;
+
+        string::const_iterator until = std::find(found + wikiPath.size(), end, '"');
+        if (until == end) break;
+
+        if (std::all_of(found + wikiPath.size(), until, [](char c) { return c != '#' && c != ':'; })) {
+            string wikiName(found + wikiPath.size(), until);
+            links.insert(wikiName);
+        }
+        curr = found + 1;
+    }
+
+    return links;
 }
 
 int main() {
@@ -35,6 +57,11 @@ int main() {
 
     // Write code here
     std::ifstream input(filename);
+    if (!input.is_open()) {
+        std::cerr << "File could not be open" << endl;
+        return 1;
+    }
+
     string line;
     while (input >> line) {
         page_html += line + " ";
