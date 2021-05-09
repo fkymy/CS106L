@@ -2,6 +2,7 @@
 #include <fstream>      // for ifstream
 #include <sstream>      // for stringstream
 #include <unordered_set>
+#include <set>
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -29,14 +30,74 @@ using std::unordered_set;   using std::cin;
  *       https://en.wikipedia.org/wiki/Stanford_University
  */
 vector<string> findWikiLadder(const string& start_page, const string& end_page) {
-    // TODO: 1. Once your file reading is working, replace the below
-    //          return statement with "return {};".
-    //       2. Make sure that you've copied over your findWikiLinks method
-    //          from Part A into wikiscraper.cpp.
-    //       3. Finally, implement this function per Part B in the handout!
-    //
-    //                Best of luck!
-    return {"File reading works!", start_page, end_page};
+    WikiScraper scraper;
+    std::unordered_set<string> target_set;
+
+    target_set = scraper.getLinkSet(end_page);
+
+    // Comparison function for priority queue
+    auto cmpFn = [&scraper, &target_set](vector<string> ladder1, vector<string> ladder2) {
+        string page1 = ladder1.at(ladder1.size() - 1);
+        string page2 = ladder2.at(ladder1.size() - 1);
+
+        std::unordered_set<string> set1 = scraper.getLinkSet(page1);
+        std::unordered_set<string> set2 = scraper.getLinkSet(page2);
+
+        int num1 = 0;
+        int num2 = 0;
+        for (std::unordered_set<string>::iterator itr = set1.begin(); itr != set1.end(); ++itr) {
+            if (target_set.count(*itr))
+                ++num1;
+        }
+        for (std::unordered_set<string>::iterator itr = set2.begin(); itr != set2.end(); ++itr) {
+            if (target_set.count(*itr))
+                ++num2;
+        }
+        return num1 < num2;
+    };
+
+    std::priority_queue<vector<string>, vector<vector<string>>,
+            decltype(cmpFn)> ladderQueue(cmpFn);
+
+    vector<string> startLadder{ start_page };
+    std::set<string> visited;
+    ladderQueue.push(startLadder);
+
+    int count = 0;
+    while (!ladderQueue.empty()) {
+        cout << count << " -------------------------" << endl;
+        vector<string> currLadder = ladderQueue.top();
+        ladderQueue.pop();
+        cout << "Visiting Partial Ladder: ";
+        std::copy(currLadder.begin(), currLadder.end(), std::ostream_iterator<string>(cout, " "));
+        cout << endl;
+
+        string currPage = currLadder.back();
+
+        std::unordered_set<string> currSet = scraper.getLinkSet(currPage);
+        if (currSet.count(end_page)) {
+            cout << "Found end_page!" << endl;
+            currLadder.push_back(end_page);
+            return currLadder;
+        }
+
+        for (std::unordered_set<string>::iterator itr = currSet.begin(); itr != currSet.end(); ++itr) {
+            if (!visited.count(*itr)) {
+                vector<string> newLadder = currLadder;
+                newLadder.push_back(*itr);
+                ladderQueue.push(newLadder);
+                visited.insert(*itr);
+
+                cout << "Added Partial Ladder: ";
+                std::copy(newLadder.begin(), newLadder.end(), std::ostream_iterator<string>(cout, " "));
+                cout << endl;
+            }
+        }
+        ++count;
+    }
+
+    cout << "No ladder found..." << endl;
+    return {};
 }
 
 int main() {

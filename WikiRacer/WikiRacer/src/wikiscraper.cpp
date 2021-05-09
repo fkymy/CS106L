@@ -15,17 +15,44 @@ using std::unordered_map;   using std::unordered_set;
  *
  * If you used any helper functions, just put them above this function.
  */
+//unordered_set<string> findWikiLinks(const string& inp) {
+//    // TODO: Remove all the code in this function and fill
+//    //       in with your findWikiLinks code from part A
+
+//    errorPrint();
+//    errorPrint("If you are seeing this message, you haven't implemented");
+//    errorPrint("the find_wiki_links method in wikiscraper.cpp.");
+//    errorPrint();
+//    cout << endl;
+//    return {};
+
+//}
 unordered_set<string> findWikiLinks(const string& inp) {
-    // TODO: Remove all the code in this function and fill
-    //       in with your findWikiLinks code from part A
+    // TODO: delete this return statement and implement the
+    //       function!
+    unordered_set<string> links;
 
-    errorPrint();
-    errorPrint("If you are seeing this message, you haven't implemented");
-    errorPrint("the find_wiki_links method in wikiscraper.cpp.");
-    errorPrint();
-    cout << endl;
-    return {};
+    string wikiPath = "<a href=\"/wiki/";
 
+    string::const_iterator curr = inp.begin();
+    string::const_iterator end = inp.end();
+
+    while (curr != end) {
+        // find occurance of wikiPath in the range [start, end)
+        string::const_iterator found = std::search(curr, end, wikiPath.begin(), wikiPath.end());
+        if (found == end) break;
+
+        string::const_iterator until = std::find(found + wikiPath.size(), end, '"');
+        if (until == end) break;
+
+        if (std::all_of(found + wikiPath.size(), until, [](char c) { return c != '#' && c != ':'; })) {
+            string wikiName(found + wikiPath.size(), until);
+            links.insert(wikiName);
+        }
+        curr = found + 1;
+    }
+
+    return links;
 }
 
 
