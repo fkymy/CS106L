@@ -36,24 +36,29 @@ vector<string> findWikiLadder(const string& start_page, const string& end_page) 
     target_set = scraper.getLinkSet(end_page);
 
     // Comparison function for priority queue
-    auto cmpFn = [&scraper, &target_set](vector<string> ladder1, vector<string> ladder2) {
-        string page1 = ladder1.at(ladder1.size() - 1);
-        string page2 = ladder2.at(ladder1.size() - 1);
+    auto cmpFn = [&scraper, &target_set](const vector<string>& ladder1, const vector<string>& ladder2) {
+        string page1 = ladder1.back();
+        string page2 = ladder2.back();
 
         std::unordered_set<string> set1 = scraper.getLinkSet(page1);
         std::unordered_set<string> set2 = scraper.getLinkSet(page2);
 
-        int num1 = 0;
-        int num2 = 0;
-        for (std::unordered_set<string>::iterator itr = set1.begin(); itr != set1.end(); ++itr) {
-            if (target_set.count(*itr))
-                ++num1;
-        }
-        for (std::unordered_set<string>::iterator itr = set2.begin(); itr != set2.end(); ++itr) {
-            if (target_set.count(*itr))
-                ++num2;
-        }
-        return num1 < num2;
+//        int num1 = 0;
+//        int num2 = 0;
+//        for (std::unordered_set<string>::iterator itr = set1.begin(); itr != set1.end(); ++itr) {
+//            if (target_set.count(*itr))
+//                ++num1;
+//        }
+//        for (std::unordered_set<string>::iterator itr = set2.begin(); itr != set2.end(); ++itr) {
+//            if (target_set.count(*itr))
+//                ++num2;
+//        }
+        vector<string> intersect1, intersect2;
+        std::set_intersection(set1.begin(), set1.end(), target_set.begin(), target_set.end(),
+                              std::back_inserter(intersect1));
+        std::set_intersection(set2.begin(), set2.end(), target_set.begin(), target_set.end(),
+                              std::back_inserter(intersect2));
+        return intersect1.size() < intersect2.size();
     };
 
     std::priority_queue<vector<string>, vector<vector<string>>,
@@ -96,7 +101,6 @@ vector<string> findWikiLadder(const string& start_page, const string& end_page) 
         ++count;
     }
 
-    cout << "No ladder found..." << endl;
     return {};
 }
 
