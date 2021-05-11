@@ -8,7 +8,7 @@ const int NUM_COLUMNS = 3;
 const int COLUMN_WIDTH = 20;
 
 void printTableHeader() {
-	for(int column = 0; column < NUM_COLUMNS; ++column) {
+	for(int column = 0; column < NUM_COLUMNS - 1; ++column) {
 		cout << setfill('-') << setw(COLUMN_WIDTH) << "" << "-+-";
 	}
 	cout << setw(COLUMN_WIDTH) << "" << setfill(' ') << endl;
